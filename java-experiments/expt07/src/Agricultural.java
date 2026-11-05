@@ -1,35 +1,35 @@
-import java.math.BigDecimal;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
+
 public class Agricultural {
-    static List<BigDecimal> amounts(String... values) {
-        BigDecimal[] result = new BigDecimal[values.length];
-        for (int i = 0; i < values.length; i++) result[i] = new BigDecimal(values[i]);
-        return Arrays.asList(result);
-    }
-    static BigDecimal sum(List<BigDecimal> list) {
-        BigDecimal total = BigDecimal.ZERO;
-        Iterator<BigDecimal> iterator = list.iterator();
-        while (iterator.hasNext()) total = total.add(iterator.next());
+    // 用“分”存金额，例如 5020 分就是 50.20 元，避免小数计算误差。
+    public static int sum(ArrayList<Integer> money) {
+        int total = 0;
+        Iterator<Integer> it = money.iterator();
+        while (it.hasNext()) {
+            total = total + it.next();
+        }
         return total;
     }
     public static void main(String[] args) {
-        List<BigDecimal> rice = amounts("50.20", "29.58", "20.32");
-        List<BigDecimal> wheat = amounts("13.12", "66.66", "10.12");
-        List<BigDecimal> corn = amounts("30.32", "95.32", "14.93");
-        Map<String, BigDecimal> budget = new LinkedHashMap<>();
-        budget.put("水稻", sum(rice)); budget.put("小麦", sum(wheat)); budget.put("玉米", sum(corn));
-        BigDecimal total = BigDecimal.ZERO;
-        Iterator<Map.Entry<String, BigDecimal>> entries = budget.entrySet().iterator();
-        System.out.println("本月实际报销统计");
-        while (entries.hasNext()) {
-            Map.Entry<String, BigDecimal> entry = entries.next();
-            System.out.println(entry.getKey() + "部门：" + entry.getValue().toPlainString() + "元");
-            total = total.add(entry.getValue());
+        ArrayList<Integer> rice = new ArrayList<Integer>();
+        rice.add(5020); rice.add(2958); rice.add(2032);
+        ArrayList<Integer> wheat = new ArrayList<Integer>();
+        wheat.add(1312); wheat.add(6666); wheat.add(1012);
+        ArrayList<Integer> corn = new ArrayList<Integer>();
+        corn.add(3032); corn.add(9532); corn.add(1493);
+        Map<String, Integer> totals = new LinkedHashMap<String, Integer>();
+        totals.put("水稻", sum(rice));
+        totals.put("小麦", sum(wheat));
+        totals.put("玉米", sum(corn));
+        int all = 0;
+        for (String name : totals.keySet()) {
+            int money = totals.get(name);
+            System.out.printf("%s部门：%.2f元%n", name, money / 100.0);
+            all = all + money;
         }
-        System.out.println("本月合计：" + total.toPlainString() + "元");
+        System.out.printf("本月合计：%.2f元%n", all / 100.0);
     }
 }

@@ -4,9 +4,9 @@ This is your README. READMEs are where you can communicate what your project is 
 
 Write your name on line 6, save it, and then head back to GitHub Desktop.
 
-## Java 程序设计实验
+## Java 程序设计实验（高中生入门版）
 
-已整理全部 8 个实验，包含可用 IntelliJ IDEA 打开的独立项目、代码知识点、实验步骤及验证结果。
+已整理全部 8 个实验的高中生入门版：中文注释、分步操作、小练习，以及可用 IntelliJ IDEA 打开的独立项目。学习顺序：先运行 → 看注释 → 改一点 → 再运行。各项目说明列明与原文的简化差异。
 
 - [项目目录与使用说明](java-experiments/README.md)
 - [下载全部实验项目](downloads/Java实验项目全集.zip)

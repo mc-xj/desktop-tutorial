@@ -1,102 +1,48 @@
-"""维护者校验脚本：需要 JDK 9+，JAVA_LAB_JDK 可指定 JDK 根目录。"""
+"""维护者运行检查：JAVA_LAB_JDK 指向 JDK 9+ 的安装目录。"""
 from pathlib import Path
-import os, subprocess, tempfile, re, xml.etree.ElementTree as ET
-
-root = Path(__file__).parent
-bin_dir = Path(os.environ['JAVA_LAB_JDK'])/'bin' if 'JAVA_LAB_JDK' in os.environ else None
-javac = str(bin_dir/'javac') if bin_dir else 'javac'
-java = str(bin_dir/'java') if bin_dir else 'java'
-lines = []
-
-def run(args, **kwargs):
-    return subprocess.run(args, text=True, encoding='utf-8', stdout=subprocess.PIPE,
-                          stderr=subprocess.PIPE, check=True, timeout=20, **kwargs).stdout
-
-with tempfile.TemporaryDirectory(prefix='java-labs-') as tmp:
-    for n in range(1, 9):
-        name = 'expt%02d' % n
-        project = root/name
-        out = Path(tmp)/name
-        out.mkdir()
-        run([javac, '--release', '8', '-encoding', 'UTF-8', '-d', str(out),
-             *map(str, sorted((project/'src').glob('*.java')))])
-        for p in list(project.rglob('*.xml')) + list(project.glob('*.iml')):
-            ET.parse(p)
-        def app(main, *args, stdin=''):
-            return run([java, '-Dfile.encoding=UTF-8', '-cp', str(out), main, *args], input=stdin)
-        if n == 1:
-            assert 'Hello, World!' in app('HelloWorld')
-        elif n == 2:
-            result = app('WerewolfGame', stdin='abc\n99\n0\n2\n')
-            assert all(s in result for s in ['整数编号', '编号无效', '不能杀死同伴', '狼人胜利'])
-            assert '游戏已退出' in app('WerewolfGame', stdin='q\n')
-            harness = '''import java.util.Scanner;
-public class BehaviorCheck { public static void main(String[] args) {
-    if (WerewolfGame.winner(new boolean[]{false,false,true,true,true}) != 1) throw new AssertionError();
-    if (WerewolfGame.winner(new boolean[]{true,false,true,true,true}) != 0) throw new AssertionError();
-    int target = WerewolfGame.readTarget(new Scanner("2\\n0\\n"), new boolean[]{true,true,false,true,true}, false);
-    if(target != 0) throw new AssertionError();
-} }'''
-        elif n == 3:
-            result = app('RentalApp', stdin='rent 1 3\nrent 1 2\nrent 2 0\nreturn 1\nrent 1 1\nreturn 3\nrent 99 1\nabc\n0\n')
-            assert all(s in result for s in ['300.00', '该车已租', '天数必须为正数', '还车成功', '100.00', '没有进行中的订单', '车辆编号无效', '命令格式错误'])
-        elif n == 4:
-            result = app('ShapeApp')
-            assert all(s in result for s in ['38.57', '26.00', '36.00'])
-            harness = '''public class BehaviorCheck { public static void main(String[] args) {
-    try {new Triangle(1,2,3); throw new AssertionError();} catch(IllegalArgumentException expected) {}
-    try {new Circle(-1); throw new AssertionError();} catch(IllegalArgumentException expected) {}
-    Rectangle r = new Rectangle(4,5); r.setWidth(6);
-    if(r.getArea()!=30) throw new AssertionError();
-} }'''
-        elif n == 5:
-            result = app('CookingApp')
-            assert all(s in result for s in ['张三：3票', '李四：2票', '张三胜', '主持人'])
-            # 更换选票后重新编译到临时目录，验证胜者不是固定字符串。
-            source = (project/'src/CookingApp.java').read_text()
-            for votes, expected in [('"李四", "李四", "张三"', '李四胜'), ('"张三", "李四"', '平局')]:
-                changed = re.sub(r'Arrays.asList\([^;]+\)', 'Arrays.asList('+votes+')', source)
-                test_source = Path(tmp)/'CookingApp.java'
-                test_source.write_text(changed)
-                run([javac,'--release','8','-encoding','UTF-8','-cp',str(out),'-d',str(out),str(test_source)])
-                assert expected in app('CookingApp')
-        elif n == 6:
-            for value in ['08:59:59', '09:00:00']:
-                assert '打卡成功' in app('AttendanceApp', '2026-11-05 '+value)
-            assert '超过早 9 点' in app('AttendanceApp', '2026-11-05 09:00:01')
-            for value in ['2026-02-30 09:00:00', 'abc', '2026-11-05 09:00:00junk']:
-                assert '时间输入错误' in app('AttendanceApp', value)
-            assert '当前时间' in app('AttendanceApp')
-        elif n == 7:
-            result = app('Agricultural')
-            assert all(s in result for s in ['100.10元', '89.90元', '140.57元', '330.57元'])
-        elif n == 8:
-            for _ in range(20):
-                result = app('Panda')
-                numbers = re.findall(r'卖出了第(\d+)个', result)
-                assert sorted(map(int, numbers)) == list(range(1, 11))
-                assert '卖完了，已售10个，剩余0个' in result
-                assert '剩余-' not in result
-        if n in (2, 4):
-            source = Path(tmp)/'BehaviorCheck.java'
-            source.write_text(harness, encoding='utf-8')
-            run([javac,'--release','8','-encoding','UTF-8','-cp',str(out),'-d',str(out),str(source)])
-            app('BehaviorCheck')
-        lines.append(f'- {name}：Java 8 兼容编译、IDEA 配置 XML 检查及行为验证通过。')
-        print(lines[-1], flush=True)
-
-(root/'验证结果.md').write_text('''# 验证结果
-
-使用 Eclipse Temurin JDK 21.0.8，通过 javac --release 8 编译全部源文件，并实际运行。
-没有第三方依赖；编译输出和校验辅助类保存在临时目录，未放入交付源码。
-
-'''+'\n'.join(lines)+'''
-
-行为覆盖：HelloWorld 输出；狼人非法输入、同伴/死亡目标、退出及两方胜负判断；
-租车计价、重复租赁、非法天数/编号和还车后重新租赁；图形增删、尺寸更新和非法三角形；
-烹饪比赛张三胜、李四胜和平票；打卡 09:00:00 前/等于/后及非法日期；
-农业三个部门金额和总额；预售重复 20 次，每次恰好售出编号 1～10，库存为零，无负库存。
-
-未在图形版 IntelliJ IDEA 中点击运行，未在实际 JDK 8 上执行。IDEA 项目文件采用标准 Java 模块结构，首次打开需要选择本机 JDK。
-实验一的本机 JDK/IDEA 安装步骤需用户在自己的电脑上执行。
-''', encoding='utf-8')
+import os, subprocess, tempfile, re
+import xml.etree.ElementTree as ET
+root=Path(__file__).parent
+jdk=Path(os.environ['JAVA_LAB_JDK'])/'bin'
+checks=[]
+with tempfile.TemporaryDirectory() as tmp:
+ for i,main in enumerate(['HelloWorld','WerewolfGame','RentalApp','ShapeApp','CookingApp','AttendanceApp','Agricultural','Panda'],1):
+  p=root/f'expt{i:02d}'; out=Path(tmp)/str(i); out.mkdir()
+  def run(cmd,stdin=''):
+   result=subprocess.run(cmd,input=stdin,text=True,capture_output=True,timeout=15)
+   if result.returncode: raise RuntimeError(result.stderr)
+   return result.stdout
+  run([str(jdk/'javac'),'--release','8','-encoding','UTF-8','-d',str(out),*map(str,(p/'src').glob('*.java'))])
+  for xml in list(p.rglob('*.xml'))+list(p.glob('*.iml')): ET.parse(xml)
+  def app(stdin='',args=[]): return run([str(jdk/'java'),'-Dfile.encoding=UTF-8','-cp',str(out),main,*args],stdin)
+  if i==1: assert 'Hello, World!' in app()
+  if i==2:
+   assert '平民胜利' in app('2\n0\n3\n1\n')
+   assert '狼人胜利' in app('2\n3\n4\n')
+   s=app('abc\n99\n0\n2\n2\n-1\n')
+   assert all(t in s for t in ['整数编号','没有这个编号','不能淘汰同伴','已经出局'])
+  if i==3:
+   s=app('2\n1\n0\n1\n3\n1\n2\n1\n1\n0\n')
+   assert all(t in s for t in ['还没有租车','天数应在','300 元','已经租出','还车成功','100 元'])
+  if i==4:
+   s=app(); assert '38.566' in s and '总面积：26.0' in s
+  if i==5:
+   s=app(); assert all(t in s for t in ['张三：3票','李四：2票','张三胜'])
+   original=(p/'src/CookingApp.java').read_text()
+   for votes,expected in [('"李四", "李四", "张三"','李四胜'),('"张三", "李四"','平局')]:
+    source=Path(tmp)/'CookingApp.java'
+    source.write_text(re.sub(r'String\[\] votes = \{[^}]+\}', 'String[] votes = {'+votes+'}',original))
+    run([str(jdk/'javac'),'--release','8','-encoding','UTF-8','-cp',str(out),'-d',str(out),str(source)])
+    assert expected in app()
+  if i==6:
+   for t in ['08:59:59','09:00:00']: assert '打卡成功' in app(args=[t])
+   assert '打卡失败' in app(args=['09:00:01'])
+   for t in ['abc','25:00:00']: assert '时间格式错误' in app(args=[t])
+  if i==7: assert all(t in app() for t in ['100.10','89.90','140.57','330.57'])
+  if i==8:
+   for _ in range(20):
+    s=app(); assert sorted(map(int,re.findall('卖出第(\\d+)件',s)))==list(range(1,11))
+    assert '售卖结束，剩余0件' in s and '剩余-' not in s
+  checks.append(f'- 实验{i}：Java 8 兼容编译、IDEA XML 配置检查和实际运行通过。')
+  print(checks[-1],flush=True)
+(root/'验证结果.md').write_text('# 高中生入门版验证结果\n\n使用 Temurin JDK 21.0.8 的 javac --release 8 编译，实际运行检查。\n\n'+'\n'.join(checks)+'\n\n检查了狼人两方胜负及非法输入；租车计费、拒绝重复出租、还车和重新出租；图形添加与移除；投票两方胜负和平局；打卡 9 点前、等于、后及非法时间；农业金额；并发售卖 20 次无重复编号或负库存。\n\n未在图形版 IDEA 中点击运行，未在实际 JDK 8 上执行。此版为教学简化版，各实验说明列出与原文差异。\n',encoding='utf-8')

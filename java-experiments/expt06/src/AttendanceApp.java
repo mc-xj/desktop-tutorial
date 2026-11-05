@@ -1,34 +1,23 @@
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.TimeZone;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeParseException;
+
 public class AttendanceApp {
-    public static void check(Date now, Date deadline) {
-        if (now.after(deadline)) throw new MyException("超过早 9 点不允许打卡");
-    }
     public static void main(String[] args) {
-        TimeZone zone = TimeZone.getTimeZone("Asia/Shanghai");
-        SimpleDateFormat full = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd");
-        full.setLenient(false); full.setTimeZone(zone); day.setTimeZone(zone);
+        LocalTime deadline = LocalTime.of(9, 0, 0); // 早上 9 点。
+        LocalTime now = LocalTime.now(ZoneId.of("Asia/Shanghai"));
         try {
-            Date now = new Date();
-            if (args.length > 1) throw new IllegalArgumentException("只允许一个时间参数");
-            if (args.length == 1) {
-                // 格式化回写校验，拒绝额外字符和不完整输入。
-                now = full.parse(args[0]);
-                if (!full.format(now).equals(args[0])) throw new IllegalArgumentException("时间格式应为 yyyy-MM-dd HH:mm:ss");
+            // 不填参数就使用当前北京时间；填参数可以练习不同情况。
+            if (args.length > 0) now = LocalTime.parse(args[0]);
+            System.out.println("打卡时间：" + now);
+            if (now.isAfter(deadline)) {
+                throw new MyException("超过早上 9 点，打卡失败！");
             }
-            Date deadline = full.parse(day.format(now) + " 09:00:00");
-            System.out.println("时区：Asia/Shanghai");
-            System.out.println("当前时间：" + full.format(now));
-            System.out.println("截止时间：" + full.format(deadline));
-            check(now, deadline);
-            System.out.println("打卡成功");
+            System.out.println("打卡成功！");
         } catch (MyException e) {
-            System.out.println("打卡异常：" + e.getMessage());
-        } catch (ParseException | IllegalArgumentException e) {
-            System.out.println("时间输入错误，请使用 yyyy-MM-dd HH:mm:ss 格式");
+            System.out.println(e.getMessage());
+        } catch (DateTimeParseException e) {
+            System.out.println("时间格式错误，请填写类似 08:59:59 的时间。");
         }
     }
 }
