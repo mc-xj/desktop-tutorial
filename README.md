@@ -16,7 +16,7 @@ Write your name on line 6, save it, and then head back to GitHub Desktop.
 
 ## 独立实验报告
 
-- [实验报告文件夹](实验报告)：按上传模板栏目整理的8份Word报告，含完整源码与截图粘贴空位。
+- [实验报告文件夹](实验报告)：直接沿用上传模板封面与表格填入的8份Word报告，含完整源码与截图粘贴空位。
 - [下载8份实验报告](downloads/实验报告_8份.zip)
 
 实验一已补充Student类、对象调用以及数组for循环输出；报告中的实际结果、截图和个人结论请运行后填写。
