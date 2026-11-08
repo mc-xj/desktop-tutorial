@@ -15,7 +15,9 @@ with tempfile.TemporaryDirectory() as tmp:
   run([str(jdk/'javac'),'--release','8','-encoding','UTF-8','-d',str(out),*map(str,(p/'src').glob('*.java'))])
   for xml in list(p.rglob('*.xml'))+list(p.glob('*.iml')): ET.parse(xml)
   def app(stdin='',args=[]): return run([str(jdk/'java'),'-Dfile.encoding=UTF-8','-cp',str(out),main,*args],stdin)
-  if i==1: assert 'Hello, World!' in app()
+  if i==1:
+   s=app()
+   assert all(t in s for t in ['Hello, World!', '我是小明，今年16岁。', '第1次成绩：85', '第2次成绩：90', '第3次成绩：95'])
   if i==2:
    assert '平民胜利' in app('2\n0\n3\n1\n')
    assert '狼人胜利' in app('2\n3\n4\n')
