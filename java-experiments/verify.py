@@ -24,7 +24,7 @@ with tempfile.TemporaryDirectory() as tmp:
    s=app('abc\n99\n0\n2\n2\n-1\n')
    assert all(t in s for t in ['整数编号','没有这个编号','不能淘汰同伴','已经出局'])
   if i==3:
-   s=app('2\n1\n0\n1\n3\n1\n2\n1\n1\n0\n')
+   s=app('2\n1\n1\n1\n366\n1\n1\n3\n1\n1\n2\n1\n1\n1\n1\n0\n')
    assert all(t in s for t in ['没有需要归还','天数应在','300元','已经租出','还车成功','100元'])
   if i==4:
    s=app(); assert '38.566' in s and '总面积：26.0' in s
