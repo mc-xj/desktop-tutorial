@@ -15,7 +15,7 @@
 | --- | --- | --- |
 | 1 | Java 环境与第一行输出 | HelloWorld |
 | 2 | 狼人杀小游戏 | WerewolfGame |
-| 3 | 一辆汽车的租借与归还 | RentalApp |
+| 3 | 汽车租赁系统（课堂板书版） | Test |
 | 4 | 图形面积小助手 | ShapeApp |
 | 5 | 美食烹饪大赛 | CookingApp |
 | 6 | 早上 9 点打卡 | AttendanceApp |

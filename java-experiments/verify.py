@@ -6,7 +6,7 @@ root=Path(__file__).parent
 jdk=Path(os.environ['JAVA_LAB_JDK'])/'bin'
 checks=[]
 with tempfile.TemporaryDirectory() as tmp:
- for i,main in enumerate(['HelloWorld','WerewolfGame','RentalApp','ShapeApp','CookingApp','AttendanceApp','Agricultural','Panda'],1):
+ for i,main in enumerate(['HelloWorld','WerewolfGame','Test','ShapeApp','CookingApp','AttendanceApp','Agricultural','Panda'],1):
   p=root/f'expt{i:02d}'; out=Path(tmp)/str(i); out.mkdir()
   def run(cmd,stdin=''):
    result=subprocess.run(cmd,input=stdin,text=True,capture_output=True,timeout=15)
@@ -25,7 +25,7 @@ with tempfile.TemporaryDirectory() as tmp:
    assert all(t in s for t in ['整数编号','没有这个编号','不能淘汰同伴','已经出局'])
   if i==3:
    s=app('2\n1\n0\n1\n3\n1\n2\n1\n1\n0\n')
-   assert all(t in s for t in ['还没有租车','天数应在','300 元','已经租出','还车成功','100 元'])
+   assert all(t in s for t in ['没有需要归还','天数应在','300元','已经租出','还车成功','100元'])
   if i==4:
    s=app(); assert '38.566' in s and '总面积：26.0' in s
   if i==5:
