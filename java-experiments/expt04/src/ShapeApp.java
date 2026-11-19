@@ -7,6 +7,7 @@ public class ShapeApp {
         manager.add(rectangle);
         manager.add(circle);
         manager.add(triangle);
+        manager.add(new Circle(4));
         System.out.println("添加后：");
         manager.display();
 
@@ -16,7 +17,8 @@ public class ShapeApp {
         System.out.println("比较颜色内容：" + rectangle.getColor().equals(color));
 
         manager.remove(circle);
-        System.out.println("移除圆形后：");
+        manager.remove(triangle);
+        System.out.println("移除第一个圆形和三角形后：");
         manager.display();
 
         try {
