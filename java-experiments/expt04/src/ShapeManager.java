@@ -13,7 +13,14 @@ public class ShapeManager {
                 Class<? extends Shape> type = shape.getClass();
                 int number = counts.getOrDefault(type, 0) + 1;
                 counts.put(type, number);
-                String name = type == Circle.class ? "圆形" : type.getSimpleName();
+                String name = type.getSimpleName();
+                if (type == Circle.class) {
+                    name = "圆形";
+                } else if (type == Rectangle.class) {
+                    name = "矩形";
+                } else if (type == Triangle.class) {
+                    name = "三角形";
+                }
                 names[i] = name + " " + number;
                 shapes[i] = shape;
                 return;
