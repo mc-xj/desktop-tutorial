@@ -1,8 +1,24 @@
-// 父类：把所有图形都有的内容放在一起。
 public abstract class Shape {
     private String color;
-    public Shape(String color) { this.color = color; }
+
+    protected Shape(String color) {
+        setColor(color);
+    }
+
     public String getColor() { return color; }
-    // 每种图形的面积公式不同，所以这里不写具体公式。
+    public void setColor(String color) { this.color = color; }
+
+    protected static void requirePositive(double size) {
+        if (!Double.isFinite(size) || size <= 0) {
+            throw new IllegalArgumentException("尺寸必须是有限正数");
+        }
+    }
+
     public abstract double getArea();
+
+    @Override
+    public String toString() {
+        return String.format("%s，颜色：%s，面积：%.2f",
+                getClass().getSimpleName(), getColor(), getArea());
+    }
 }
