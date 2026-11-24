@@ -27,7 +27,7 @@ with tempfile.TemporaryDirectory() as tmp:
    s=app('2\n1\n1\n1\n366\n1\n1\n3\n1\n1\n2\n1\n1\n1\n1\n0\n')
    assert all(t in s for t in ['没有需要归还','天数应在','300元','已经租出','还车成功','100元'])
   if i==4:
-   s=app(); assert '38.566' in s and '总面积：26.0' in s
+   s=app(); assert all(x in s for x in ['梯形 1', '总面积：97.83', '总面积：79.27', '尝试设置的三边：1、2、3', '原三角形面积仍为：6.0'])
   if i==5:
    s=app(); assert all(t in s for t in ['张三：3票','李四：2票','张三胜'])
    original=(p/'src/CookingApp.java').read_text()

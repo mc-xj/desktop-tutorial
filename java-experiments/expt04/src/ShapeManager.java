@@ -20,6 +20,8 @@ public class ShapeManager {
                     name = "矩形";
                 } else if (type == Triangle.class) {
                     name = "三角形";
+                } else if (type == tixing.class) {
+                    name = "梯形";
                 }
                 names[i] = name + " " + number;
                 shapes[i] = shape;

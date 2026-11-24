@@ -16,6 +16,8 @@ public abstract class Shape {
 
     public abstract double getArea();
 
+
+
     @Override
     public String toString() {
         return String.format("%s，颜色：%s，面积：%.2f",
