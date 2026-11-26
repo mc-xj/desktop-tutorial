@@ -17,7 +17,7 @@
 | 2 | 狼人杀小游戏 | WerewolfGame |
 | 3 | 汽车租赁系统（课堂板书版） | Test |
 | 4 | 图形面积小助手 | ShapeApp |
-| 5 | 美食烹饪大赛 | CookingApp |
+| 5 | 美食烹饪大赛（课堂板书版） | Test |
 | 6 | 早上 9 点打卡 | AttendanceApp |
 | 7 | 三个农业部门的费用统计 | Agricultural |
 | 8 | 三个窗口卖十件挂件 | Panda |
