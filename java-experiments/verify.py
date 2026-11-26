@@ -30,12 +30,9 @@ with tempfile.TemporaryDirectory() as tmp:
    s=app(); assert all(x in s for x in ['梯形 1', '总面积：97.83', '总面积：79.27', '尝试设置的三边：1、2、3', '原三角形面积仍为：6.0'])
   if i==5:
    s=app(); assert all(t in s for t in ['张三：3票','李四：2票','张三胜'])
-   original=(p/'src/CookingApp.java').read_text()
-   for votes,expected in [('"李四", "李四", "张三"','李四胜'),('"张三", "李四"','平局')]:
-    source=Path(tmp)/'CookingApp.java'
-    source.write_text(re.sub(r'String\[\] votes = \{[^}]+\}', 'String[] votes = {'+votes+'}',original))
-    run([str(jdk/'javac'),'--release','8','-encoding','UTF-8','-cp',str(out),'-d',str(out),str(source)])
-    assert expected in app()
+   assert '李四胜' in app(args=['李四','李四','张三'])
+   assert '平局' in app(args=['张三','李四'])
+   assert '无效选票' in app(args=['王五'])
   if i==6:
    for t in ['08:59:59','09:00:00']: assert '打卡成功' in app(args=[t])
    assert '打卡失败' in app(args=['09:00:01'])
